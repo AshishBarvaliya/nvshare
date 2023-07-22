@@ -1,42 +1,46 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
     provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "sqlite"
-    // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-    url      = env("DATABASE_URL")
+    provider     = "mysql"
+    url          = env("DATABASE_URL")
+    relationMode = "prisma"
 }
 
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model User {
+    id            String          @id @default(cuid())
+    name          String
+    email         String          @unique
+    emailVerified DateTime?
+    image         String?
+    accounts      Account[]
+    sessions      Session[]
+    organizations Organization[]
+    projectAccess ProjectAccess[]
+    projects      Project[]
+    environments  Environment[]
+    commits       Commit[]
 }
 
-// Necessary for Next auth
 model Account {
     id                String  @id @default(cuid())
     userId            String
     type              String
     provider          String
     providerAccountId String
-    refresh_token     String? // @db.Text
-    access_token      String? // @db.Text
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
     expires_at        Int?
     token_type        String?
     scope             String?
-    id_token          String? // @db.Text
+    id_token          String? @db.Text
     session_state     String?
-    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@unique([provider, providerAccountId])
+    @@index([userId])
 }
 
 model Session {
@@ -45,16 +49,8 @@ model Session {
     userId       String
     expires      DateTime
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
 
-model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
+    @@index([userId])
 }
 
 model VerificationToken {
@@ -63,4 +59,102 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Organization {
+    id        String   @id @default(cuid())
+    userId    String
+    name      String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    projects Project[]
+    commits  Commit[]
+
+    @@index([userId])
+}
+
+model Project {
+    id             String   @id @default(cuid())
+    organizationId String
+    rootUserId     String
+    name           String
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
+
+    organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+    users        ProjectAccess[]
+    rootUser     User            @relation(fields: [rootUserId], references: [id])
+    environments Environment[]
+    commits      Commit[]
+
+    @@index([rootUserId])
+    @@index([organizationId])
+}
+
+model ProjectAccess {
+    userId    String
+    projectId String
+    access    AccessType @default(READ)
+
+    user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+    @@id([userId, projectId])
+    @@index([userId])
+    @@index([projectId])
+}
+
+model Environment {
+    id        String   @id @default(cuid())
+    userId    String
+    projectId String
+    name      String
+    headId    String   @unique
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    project Project  @relation(fields: [projectId], references: [id])
+    commits Commit[]
+    head    Head     @relation(fields: [headId], references: [id])
+
+    @@index([userId])
+    @@index([projectId])
+}
+
+model Commit {
+    id             String   @id @default(cuid())
+    userId         String
+    organizationId String
+    projectId      String
+    environmentId  String
+    message        String
+    version        String
+    createdAt      DateTime @default(now())
+
+    user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+    project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    environment  Environment  @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+    @@index([organizationId])
+    @@index([projectId])
+    @@index([environmentId])
+}
+
+model Head {
+    id            String   @id @default(cuid())
+    environmentId String
+    message       String
+    createdAt     DateTime @default(now())
+
+    environment Environment?
+}
+
+enum AccessType {
+    READ
+    WRITE
 }
