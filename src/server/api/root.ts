@@ -1,5 +1,7 @@
-import { projectRouter } from "~/server/api/routers/project";
 import { organizationRouter } from "~/server/api/routers/organization";
+import { projectRouter } from "~/server/api/routers/project";
+import { environmentRouter } from "~/server/api/routers/environment";
+import { commitRouter } from "~/server/api/routers/commit";
 import { createTRPCRouter } from "~/server/api/trpc";
 
 /**
@@ -8,8 +10,10 @@ import { createTRPCRouter } from "~/server/api/trpc";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  project: projectRouter,
   organization: organizationRouter,
+  project: projectRouter,
+  environment: environmentRouter,
+  commit: commitRouter,
 });
 
 // export type definition of API
