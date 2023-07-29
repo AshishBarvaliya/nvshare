@@ -1,19 +1,11 @@
-import Head from "next/head";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 export default function Home() {
-  return (
-    <>
-      <Head>
-        <title>nvshare</title>
-        <meta
-          name="description"
-          content="Share your project secrets securely and easily."
-        />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <main className="flex min-h-screen flex-col items-center justify-center">
-        nvshare
-      </main>
-    </>
-  );
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push("/dashboard");
+  });
+  return null;
 }
