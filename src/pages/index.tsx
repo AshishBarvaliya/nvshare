@@ -7,7 +7,7 @@ export default function Home() {
         <title>nvshare</title>
         <meta
           name="description"
-          content="Share your project secerets sucurely and easily"
+          content="Share your project secrets securely and easily."
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
