@@ -1,41 +1,37 @@
 import { type NextPage } from "next";
-import { signIn, useSession } from "next-auth/react";
-import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { signIn } from "next-auth/react";
 import { Icons } from "~/components/icons";
+import { Layout } from "~/components/layout";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import Typography from "~/components/ui/typography";
 
 const Login: NextPage = () => {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (session && status === "authenticated") {
-      router.push("/dashboard");
-    }
-  }, [router, session, status]);
-
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center">
-      <Card>
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl">Signin with</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="grid gap-6">
-            <Button variant="outline" onClick={() => signIn("github")}>
-              <Icons.gitHub className="mr-2 h-4 w-4" />
-              Github
-            </Button>
-            <Button variant="outline" onClick={() => signIn("google")}>
-              <Icons.google className="mr-2 h-4 w-4" />
-              Google
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <Layout>
+      <div>
+        <Typography element="h2" as="h3">
+          Choose an option to continue with
+        </Typography>
+        <div className="mt-5 flex flex-1 justify-center gap-5">
+          <Button
+            variant="outline"
+            className="w-[140px]"
+            onClick={() => signIn("github")}
+          >
+            <Icons.gitHub className="mr-2 h-4 w-4" />
+            Github
+          </Button>
+          <Button
+            variant="outline"
+            className="w-[140px]"
+            onClick={() => signIn("google")}
+          >
+            <Icons.google className="mr-2 h-4 w-4" />
+            Google
+          </Button>
+        </div>
+      </div>
+    </Layout>
   );
 };
 
